@@ -42,7 +42,7 @@ def init_database(database):
 
     model = VGGNet()
     for i, img_path in enumerate(img_list):
-        norm_feat = model.resnet_extract_feat(
+        norm_feat = model.vgg_extract_feat(
             img_path)  # 修改此处改变提取特征的网络
         img_name = os.path.split(img_path)[1]
         feats.append(norm_feat)
@@ -82,7 +82,7 @@ def match(database, queryImgPath):
     model = VGGNet()
 
     # extract query image's feature, compute simlarity score and sort
-    queryVec = model.resnet_extract_feat(queryImgPath)  # 修改此处改变提取特征的网络
+    queryVec = model.vgg_extract_feat(queryImgPath)  # 修改此处改变提取特征的网络
     # print(queryVec.shape)
     # print(feats.shape)
     print('--------------------------')
@@ -97,7 +97,7 @@ def match(database, queryImgPath):
     print(rank_score)
 
     # number of top retrieved images to show
-    maxres = 3  # 检索出三张相似度最高的图片
+    maxres = 5  # 检索出三张相似度最高的图片
     imglist = []
     for i, index in enumerate(rank_ID[0:maxres]):
         if rank_score[i].item() > 0.8:
@@ -110,11 +110,45 @@ def match(database, queryImgPath):
 
     return imglist
 
+def preDeal(img_path):
+    objectDetect(img_path)
+    linesPalm(img_path)
+
+def zeroPaddingResizeCV(img, size=(224, 224), interpolation=None):
+    isize = img.shape
+    ih, iw = isize[0], isize[1]
+    h, w = size[0], size[1]
+    scale = min(w / iw, h / ih)
+    new_w = int(iw * scale + 0.5)
+    new_h = int(ih * scale + 0.5)
+ 
+    img = cv2.resize(img, (new_w, new_h), interpolation)
+    new_img = np.zeros((h, w, 3), np.uint8)
+    new_img[(h-new_h)//2:(h+new_h)//2, (w-new_w)//2:(w+new_w)//2] = img
+
+    return new_img
+
+def linesPalm(img_path):
+    image = cv2.imread(img_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray,60,65,apertureSize = 3)
+    edges = cv2.bitwise_not(edges)
+    # cv2.imwrite("palmlines.jpg", edges)
+    # palmlines = cv2.imread("palmlines.jpg")
+    # img = cv2.addWeighted(palmlines, 0.3, image, 0.7, 0)
+    cv2.imwrite(img_path, edges)
+    
 
 def objectDetect(img_path):
     print(img_path)
-   # step1：加载图片，转成灰度图
+
+    # step1：加载图片
     image = cv2.imread(img_path)
+
+    # 缩放图片
+    image = zeroPaddingResizeCV(image)
+
+    # 转成灰度图
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # step2:用Sobel算子计算x，y方向上的梯度，之后在x方向上减去y方向上的梯度，通过这个减法，我们留下具有高水平梯度和低垂直梯度的图像区域。

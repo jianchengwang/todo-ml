@@ -11,15 +11,15 @@ from extract_cnn_vgg16_keras import VGGNet
 
 
 def get_imlist(path):
-    return [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.jfif')]
+    return [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.jpg')]
 
 
 '''
  Extract features and index the images
 '''
 if __name__ == "__main__":
-    database = 'database-tea'
-    index = 'models/vgg_featureCNN_tea.h5'
+    database = 'database-tea-yasuo'
+    index = 'models/vgg_featureCNN_tea_yasuo.h5'
     img_list = get_imlist(database)
 
     print("--------------------------------------------------")

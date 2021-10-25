@@ -5,9 +5,9 @@ import numpy as np
 
 from extract_cnn_vgg16_keras import VGGNet
 
-query = 'object_detect_crop.png'
-index = 'models/vgg_featureCNN_tea.h5'
-result = 'database-tea'
+query = 'database-tea-yasuo/cbL1_s1.jpg'
+index = 'models/vgg_featureCNN_tea_yasuo.h5'
+result = 'database-tea-yasuo'
 # read in indexed images' feature vectors and corresponding image names
 h5f = h5py.File(index, 'r')
 feats = h5f['dataset_1'][:]

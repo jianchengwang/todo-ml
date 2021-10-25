@@ -1,9 +1,33 @@
 import cv2
 import numpy as np
 
+def zeroPaddingResizeCV(img, size=(224, 224), interpolation=None):
+    isize = img.shape
+    ih, iw = isize[0], isize[1]
+    h, w = size[0], size[1]
+    scale = min(w / iw, h / ih)
+    new_w = int(iw * scale + 0.5)
+    new_h = int(ih * scale + 0.5)
+ 
+    img = cv2.resize(img, (new_w, new_h), interpolation)
+    new_img = np.zeros((h, w, 3), np.uint8)
+    new_img[(h-new_h)//2:(h+new_h)//2, (w-new_w)//2:(w+new_w)//2] = img
+
+    return new_img
+
 # 参照 https://blog.csdn.net/liqiancao/article/details/55670749
-# step1：加载图片，转成灰度图
-image = cv2.imread("obj_test.png")
+# step1：加载图片
+image = cv2.imread("database-tea-cake/1018-1-a.jpg")
+cv2.imshow("original", image)
+cv2.waitKey()
+
+# 缩放图片
+image = zeroPaddingResizeCV(image, size=(224, 224))
+# show image
+cv2.imshow("resized", image)
+cv2.waitKey()
+
+# 转成灰度图
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # step2:用Sobel算子计算x，y方向上的梯度，之后在x方向上减去y方向上的梯度，通过这个减法，我们留下具有高水平梯度和低垂直梯度的图像区域。
@@ -133,4 +157,14 @@ print(x1)
 print(x1+width)
 cv2.imshow('cropImg', cropImg)
 cv2.imwrite("object_detect_crop.png", cropImg)
+cv2.waitKey(0)
+
+
+
+image = cv2.imread("object_detect_crop.png")
+cv2.imshow("Original",image)
+cv2.waitKey(0)
+ 
+gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+cv2.imshow("Gray",gray)
 cv2.waitKey(0)
