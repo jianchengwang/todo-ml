@@ -42,7 +42,7 @@ def init_database(database):
 
     model = VGGNet()
     for i, img_path in enumerate(img_list):
-        norm_feat = model.vgg_extract_feat(
+        norm_feat = model.resnet_extract_feat(
             img_path)  # 修改此处改变提取特征的网络
         img_name = os.path.split(img_path)[1]
         feats.append(norm_feat)
@@ -82,7 +82,7 @@ def match(database, queryImgPath):
     model = VGGNet()
 
     # extract query image's feature, compute simlarity score and sort
-    queryVec = model.vgg_extract_feat(queryImgPath)  # 修改此处改变提取特征的网络
+    queryVec = model.resnet_extract_feat(queryImgPath)  # 修改此处改变提取特征的网络
     # print(queryVec.shape)
     # print(feats.shape)
     print('--------------------------')
@@ -97,7 +97,7 @@ def match(database, queryImgPath):
     print(rank_score)
 
     # number of top retrieved images to show
-    maxres = 5  # 检索出三张相似度最高的图片
+    maxres = 100  # 检索出三张相似度最高的图片
     imglist = []
     for i, index in enumerate(rank_ID[0:maxres]):
         if rank_score[i].item() > 0.8:
@@ -112,7 +112,7 @@ def match(database, queryImgPath):
 
 def preDeal(img_path):
     objectDetect(img_path)
-    linesPalm(img_path)
+    # linesPalm(img_path)
 
 def zeroPaddingResizeCV(img, size=(224, 224), interpolation=None):
     isize = img.shape

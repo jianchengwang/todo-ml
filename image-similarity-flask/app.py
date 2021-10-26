@@ -31,7 +31,7 @@ def upload():
             os.makedirs(os.path.dirname(savePath), exist_ok=True)
             app.logger.info('savePath: {}', savePath)
             file.save(savePath)
-            core.preDeal(savePath)
+            # core.preDeal(savePath)
         else:
             app.logger.info('error file: {}', file.filename)
     core.init_database(database)
@@ -54,7 +54,7 @@ def match():
         savePath = os.path.join(utils.TEMPDIR, uploaded_file.filename)
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
         uploaded_file.save(savePath)
-        core.preDeal(savePath)
+        # core.preDeal(savePath)
         imglist = core.match(database, savePath)
         return utils.result(msg='Successed.', data=imglist)
     else:
