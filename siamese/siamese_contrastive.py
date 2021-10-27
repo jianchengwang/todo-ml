@@ -21,17 +21,17 @@ the class segmentation of the training inputs.
 ## Setup
 """
 
+
+"""
+## Hyperparameters
+"""
+
 import random
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
-
-"""
-## Hyperparameters
-"""
-
 epochs = 10
 batch_size = 16
 margin = 1  # Margin for constrastive loss.
@@ -207,7 +207,8 @@ def visualize(pairs, labels, to_show=6, num_col=3, predictions=None, test=False)
         ax.imshow(tf.concat([pairs[i][0], pairs[i][1]], axis=1), cmap="gray")
         ax.set_axis_off()
         if test:
-            ax.set_title("True: {} | Pred: {:.5f}".format(labels[i], predictions[i][0]))
+            ax.set_title("True: {} | Pred: {:.5f}".format(
+                labels[i], predictions[i][0]))
         else:
             ax.set_title("Label: {}".format(labels[i]))
     if test:
@@ -245,6 +246,8 @@ merged output is fed to the final network.
 
 # Provided two tensors t1 and t2
 # Euclidean distance = sqrt(sum(square(t1-t2)))
+
+
 def euclidean_distance(vects):
     """Find the Euclidean distance between two vectors.
     Arguments:
@@ -255,7 +258,8 @@ def euclidean_distance(vects):
     """
 
     x, y = vects
-    sum_square = tf.math.reduce_sum(tf.math.square(x - y), axis=1, keepdims=True)
+    sum_square = tf.math.reduce_sum(
+        tf.math.square(x - y), axis=1, keepdims=True)
     return tf.math.sqrt(tf.math.maximum(sum_square, tf.keras.backend.epsilon()))
 
 
@@ -326,7 +330,8 @@ def loss(margin=1):
 ## Compile the model with the contrastive loss
 """
 
-siamese.compile(loss=loss(margin=margin), optimizer="RMSprop", metrics=["accuracy"])
+siamese.compile(loss=loss(margin=margin),
+                optimizer="RMSprop", metrics=["accuracy"])
 siamese.summary()
 
 
@@ -385,4 +390,5 @@ print("test loss, test acc:", results)
 """
 
 predictions = siamese.predict([x_test_1, x_test_2])
-visualize(pairs_test, labels_test, to_show=3, predictions=predictions, test=True)
+visualize(pairs_test, labels_test, to_show=3,
+          predictions=predictions, test=True)

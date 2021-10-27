@@ -26,6 +26,7 @@ by [Rosenfeld et al., 2018](https://arxiv.org/pdf/1803.01485v3.pdf).
 ## Setup
 """
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -39,8 +40,6 @@ from tensorflow.keras import optimizers
 from tensorflow.keras import metrics
 from tensorflow.keras import Model
 from tensorflow.keras.applications import resnet
-
-
 target_shape = (200, 200)
 
 
@@ -55,7 +54,7 @@ The dataset consists of two separate files:
 
 cache_dir = Path(Path.home()) / ".keras"
 anchor_images_path = cache_dir / "left"
-positive_images_path = cache_dir / "right"
+positive_images_path = cache_dir / "right1"
 
 """shell
 gdown --id 1jvkbTr_giSP3Ru8OwGNCg6B4PvVbcO34
@@ -132,7 +131,8 @@ np.random.RandomState(seed=32).shuffle(negative_images)
 negative_dataset = tf.data.Dataset.from_tensor_slices(negative_images)
 negative_dataset = negative_dataset.shuffle(buffer_size=4096)
 
-dataset = tf.data.Dataset.zip((anchor_dataset, positive_dataset, negative_dataset))
+dataset = tf.data.Dataset.zip(
+    (anchor_dataset, positive_dataset, negative_dataset))
 dataset = dataset.shuffle(buffer_size=1024)
 dataset = dataset.map(preprocess_triplets)
 
@@ -323,7 +323,7 @@ We are now ready to train our model.
 
 siamese_model = SiameseModel(siamese_network)
 siamese_model.compile(optimizer=optimizers.Adam(0.0001))
-siamese_model.fit(train_dataset, epochs=10, validation_data=val_dataset)
+siamese_model.fit(train_dataset, epochs=500, validation_data=val_dataset)
 
 """
 ## Inspecting what the network has learned
@@ -359,6 +359,13 @@ print("Positive similarity:", positive_similarity.numpy())
 
 negative_similarity = cosine_similarity(anchor_embedding, negative_embedding)
 print("Negative similarity", negative_similarity.numpy())
+
+# save model
+embedding.save('siamese_network.h5')
+embedding.save('siamese_network')
+
+# load model
+network1 = tf.keras.models.load_model("siamese_network.h5")
 
 
 """
