@@ -4,8 +4,9 @@ import cv2
 import h5py
 import numpy as np
 
-from extract_cnn_vgg16_keras import VGGNet
+from extract_cnn_siamese_keras import SIAMESENet
 
+import lbp
 import utils
 
 '''
@@ -30,90 +31,100 @@ def init():
 
 
 def init_database(database):
-    index = os.path.join(utils.MODELS, 'vgg_featureCNN_' + database + '.h5')
+    index = os.path.join(utils.FEATURES, 'featureCNN_' + database + '.h5')
     img_list = get_imlist(database)
 
     print("--------------------------------------------------")
     print("         feature extraction starts")
     print("--------------------------------------------------")
 
-    feats = []
     names = []
+    feats = []
+    lbps = []
 
-    model = VGGNet()
+    model = SIAMESENet()
     for i, img_path in enumerate(img_list):
-        norm_feat = model.resnet_extract_feat(
-            img_path)  # 修改此处改变提取特征的网络
+        norm_feat = model.extract_feat(
+            img_path)
         img_name = os.path.split(img_path)[1]
-        feats.append(norm_feat)
         names.append(img_name)
+        feats.append(norm_feat)
+        lbps.append(lbp.get_hist(img_path))
         print("extracting feature from image No. %d , %d images in total" %
               ((i + 1), len(img_list)))
 
     feats = np.array(feats)
-    # print(feats)
-    # directory for storing extracted features
-    # output = args["index"]
     output = index
     print("--------------------------------------------------")
     print("      writing feature extraction results ...")
     print("--------------------------------------------------")
 
     h5f = h5py.File(output, 'w')
-    h5f.create_dataset('dataset_1', data=feats)
-    # h5f.create_dataset('dataset_2', data = names)
-    h5f.create_dataset('dataset_2', data=np.string_(names))
+    h5f.create_dataset('name', data=np.string_(names))
+    h5f.create_dataset('feats', data=feats)
+    h5f.create_dataset('lbps', data = lbps)
     h5f.close()
 
 
-def match(database, queryImgPath):
-    index = os.path.join(utils.MODELS, 'vgg_featureCNN_' + database + '.h5')
+def match(database, test_imgpath):
+    index = os.path.join(utils.FEATURES, 'featureCNN_' + database + '.h5')
     # read in indexed images' feature vectors and corresponding image names
     h5f = h5py.File(index, 'r')
-    feats = h5f['dataset_1'][:]
-    imgNames = h5f['dataset_2'][:]
+    imgnames = h5f['name'][:]
+    feats = h5f['feats'][:]
+    lbps = h5f['lbps'][:]
     h5f.close()
 
     print("--------------------------------------------------")
     print("               searching starts")
     print("--------------------------------------------------")
 
-    # init VGGNet16 model
-    model = VGGNet()
+    # init model
+    model = SIAMESENet()
 
     # extract query image's feature, compute simlarity score and sort
-    queryVec = model.resnet_extract_feat(queryImgPath)  # 修改此处改变提取特征的网络
-    # print(queryVec.shape)
-    # print(feats.shape)
-    print('--------------------------')
-    # print(queryVec)
-    # print(feats.T)
-    print('--------------------------')
-    scores = np.dot(queryVec, feats.T)
-    # scores = np.dot(queryVec, feats.T)/(np.linalg.norm(queryVec)*np.linalg.norm(feats.T))
+    test_feature = model.extract_feat(test_imgpath)
+    scores = np.dot(test_feature, feats.T)
     rank_ID = np.argsort(scores)[::-1]
     rank_score = scores[rank_ID]
-    # print (rank_ID)
     print(rank_score)
 
     # number of top retrieved images to show
-    maxres = 100  # 检索出三张相似度最高的图片
+    maxres = 1000  # 检索出一千张相似度最高的图片
     imglist = []
-    for i, index in enumerate(rank_ID[0:maxres]):
-        if rank_score[i].item() > 0.8:
-            imglist.append(imgNames[index].decode(
-                'UTF-8') + ":" + str(rank_score[i].item()))
-            # print(type(imgNames[index]))
+    
+    # siamesenet images results
+    match_network_images = rank_ID[0:maxres]
+    if len(match_network_images) == 0:
+        return imglist
+
+    # match lbp label
+    train_data = []
+    train_imgnames = []
+    for i, index in enumerate(match_network_images):
+        img_name = imgnames[index].decode(
+                'UTF-8')
+        lbp_feature = lbps[index]
+        train_data.append(lbp_feature)
+        train_imgnames.append(img_name)
+    matchlabel = lbp.get_match_label(train_data, train_imgnames, test_imgpath)
+    for i, index in enumerate(match_network_images):
+        img_name = imgnames[index].decode(
+                'UTF-8')
+        if rank_score[i].item() > 0.9 and utils.get_label(img_name) == matchlabel:
+            imglist.append(img_name + ":" + str(rank_score[i].item()))
             print("image names: " +
-                  str(imgNames[index]) + " scores: %f" % rank_score[i])
+                  str(imgnames[index]) + " scores: %f" % rank_score[i])
     print("top %d images in order are: " % maxres, imglist)
 
     return imglist
 
+# 预处理，暂时废弃
 def preDeal(img_path):
     objectDetect(img_path)
     # linesPalm(img_path)
 
+# 缩放图片，暂时废弃
 def zeroPaddingResizeCV(img, size=(224, 224), interpolation=None):
     isize = img.shape
     ih, iw = isize[0], isize[1]
@@ -128,6 +139,7 @@ def zeroPaddingResizeCV(img, size=(224, 224), interpolation=None):
 
     return new_img
 
+# 纹理图片，暂时废弃
 def linesPalm(img_path):
     image = cv2.imread(img_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -138,7 +150,7 @@ def linesPalm(img_path):
     # img = cv2.addWeighted(palmlines, 0.3, image, 0.7, 0)
     cv2.imwrite(img_path, edges)
     
-
+# 图像主体裁剪，暂时废弃
 def objectDetect(img_path):
     print(img_path)
 

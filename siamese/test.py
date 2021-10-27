@@ -30,7 +30,7 @@ def siamese_extract_feat(img_path):
 
 
 cosine_similarity = metrics.CosineSimilarity()
-network = tf.keras.models.load_model("siamese_network.h5")
+network = tf.keras.models.load_model("D://workspace//ml//ml-models//siamese_network.h5")
 a1 = network(siamese_extract_feat('1.jpg'))
 a2 = network(siamese_extract_feat('2.jpg'))
 a_similarity = cosine_similarity(a1, a2)

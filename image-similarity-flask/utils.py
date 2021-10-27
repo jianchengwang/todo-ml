@@ -2,14 +2,13 @@ from os.path import join, dirname
 from os import environ, makedirs
 from dotenv import load_dotenv
 
-CLIENT_SECRET_KEY = 'test'
+CLIENT_SECRET_KEY = '123456'
 DATA = '/data'
 DATABASES = '/data/databases'
 MODELS = '/data/models'
+FEATURES = '/data/features'
 TEMPDIR = '/data/tmp'
-# ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'jfif', 'bmp']) // opencv imwrite only support png or jpg
-ALLOWED_EXTENSIONS = set(['png', 'jpg'])
-
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'jfif', 'bmp'])
 
 def init_config():
     dotenv_path = join(dirname(__file__), '.env')
@@ -19,14 +18,17 @@ def init_config():
     global DATA
     global DATABASES
     global MODELS
+    global FEATURES
     global TEMPDIR
     CLIENT_SECRET_KEY = environ.get("CLIENT_SECRET_KEY")
     DATA = environ.get("DATA")
     DATABASES = join(DATA, 'databases')
     MODELS = join(DATA, 'models')
+    FEATURES = join(DATA, 'features')
     TEMPDIR = join(DATA, 'tmp')
     makedirs(DATABASES, exist_ok=True)
     makedirs(MODELS, exist_ok=True)
+    makedirs(FEATURES, exist_ok=True)
     makedirs(TEMPDIR, exist_ok=True)
 
 
@@ -36,6 +38,10 @@ def check_clientSecretKey(clientSecretKey):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+def get_label(imagePath):
+    # imagePath like 1-aaaaaa.jpg
+    return imagePath.split('-')[0]
 
 
 def result(data=None, msg='', status=200):
