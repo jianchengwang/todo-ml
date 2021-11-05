@@ -4,7 +4,8 @@ import cv2
 import h5py
 import numpy as np
 
-from extract_cnn_siamese_keras import SIAMESENet
+# from extract_cnn_siamese_keras import SIAMESENet
+from extract_cnn_scda_keras import SCDANet
 
 import lbp
 import utils
@@ -42,7 +43,8 @@ def init_database(database):
     feats = []
     lbps = []
 
-    model = SIAMESENet()
+    # model = SIAMESENet()
+    model = SCDANet()
     for i, img_path in enumerate(img_list):
         norm_feat = model.extract_feat(
             img_path)
@@ -80,7 +82,8 @@ def match(database, test_imgpath):
     print("--------------------------------------------------")
 
     # init model
-    model = SIAMESENet()
+    # model = SIAMESENet()
+    model = SCDANet()
 
     # extract query image's feature, compute simlarity score and sort
     test_feature = model.extract_feat(test_imgpath)
@@ -111,10 +114,10 @@ def match(database, test_imgpath):
     for i, index in enumerate(match_network_images):
         img_name = imgnames[index].decode(
                 'UTF-8')
-        if rank_score[i].item() > 0.9 and utils.get_label(img_name) == matchlabel:
-            imglist.append(img_name + ":" + str(rank_score[i].item()))
-            print("image names: " +
-                  str(imgnames[index]) + " scores: %f" % rank_score[i])
+        # if rank_score[i].item() > 0.9 and utils.get_label(img_name) == matchlabel:
+        imglist.append(img_name + ":" + str(rank_score[i].item()))
+        print("image names: " +
+                str(imgnames[index]) + " scores: %f" % rank_score[i])
     print("top %d images in order are: " % maxres, imglist)
 
     return imglist
