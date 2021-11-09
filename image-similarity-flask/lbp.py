@@ -28,7 +28,7 @@ class LocalBinaryPatterns:
 		return hist
 
 def get_match_label(train_data, train_imgnames, test_imgpath):
-    desc = LocalBinaryPatterns(24, 8)
+    desc = LocalBinaryPatterns(8, 1)
     data = []
     labels = []
     for index, hist in enumerate(train_data):

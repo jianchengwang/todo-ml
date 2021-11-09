@@ -31,6 +31,11 @@ class SCDANet:
         map2 = base_model.get_layer('block5_pool').output
         feat_vec = Lambda(scda_flip_plus)([map1, map2])
         self.model = Model(inputs=base_model.input, outputs=feat_vec)
+        # add siamese
+        # finally, construct the siamese network
+        distance = Lambda(utils.euclidean_distance)([featsA, featsB])
+        outputs = Dense(1, activation="sigmoid")(distance)
+        model = Model(inputs=[imgA, imgB], outputs=outputs)
         self.model.predict(np.zeros((1, 224, 224, 3)))
 
     def extract_feat(self, img_path):

@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 d2l/data/FashionMNIST/
+
+*.h5
+*/.vscode/
