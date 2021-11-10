@@ -8,6 +8,7 @@ from keras.preprocessing import image
 from numpy import linalg as LA
 
 from scda_utils import scda_flip_plus
+from utils import rotate_img1
 
 class SCDANet:
     def __init__(self):
@@ -43,3 +44,17 @@ class SCDANet:
         # print(feat.shape)
         norm_feat = feat[0]/LA.norm(feat[0])
         return norm_feat
+
+    def extract_feat_test(self, img_path):
+        norm_feats = []
+        angle = 0
+        while angle < 360:
+            if angle == 0:
+                norm_feat = self.extract_feat(img_path)
+                norm_feats.append(norm_feat)
+            else:
+                savePath = rotate_img1(img_path, angle)
+                norm_feat = self.extract_feat(savePath)
+                norm_feats.append(norm_feat)
+            angle += 5
+        return norm_feats

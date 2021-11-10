@@ -2,12 +2,12 @@ from flask import Flask, request
 import logging
 import os
 import utils
-import core
+import core1
 
 
 app = Flask(__name__)
 utils.init_config()
-core.init()
+core1.init()
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -31,10 +31,10 @@ def upload():
             os.makedirs(os.path.dirname(savePath), exist_ok=True)
             app.logger.info('savePath: {}', savePath)
             file.save(savePath)
-            # core.preDeal(savePath)
+            core1.preDeal(savePath)
         else:
             app.logger.info('error file: {}', file.filename)
-    core.init_database(database)
+    core1.init_database(database)
     return utils.result(msg='Successed.')
 
 
@@ -54,8 +54,8 @@ def match():
         savePath = os.path.join(utils.TEMPDIR, uploaded_file.filename)
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
         uploaded_file.save(savePath)
-        # core.preDeal(savePath)
-        imglist = core.match(database, savePath)
+        core1.preDeal(savePath)
+        imglist = core1.match(database, savePath)
         return utils.result(msg='Successed.', data=imglist)
     else:
         return utils.badRequest(msg='Illegal file.')

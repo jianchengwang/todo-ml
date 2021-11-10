@@ -4,8 +4,9 @@ import cv2
 import h5py
 import numpy as np
 
+from extract_cnn_vgg16_keras import VGGNet
 # from extract_cnn_siamese_keras import SIAMESENet
-from extract_cnn_scda_keras import SCDANet
+# from extract_cnn_scda_keras import SCDANet
 # from extract_cnn_bilinear_keras import BCNNNet
 
 import lbp
@@ -45,10 +46,10 @@ def init_database(database):
     lbps = []
 
     # model = SIAMESENet()
-    model = SCDANet()
+    model = VGGNet()
     # model = BCNNNet()
     for i, img_path in enumerate(img_list):
-        norm_feat = model.extract_feat(
+        norm_feat = model.resnet_extract_feat(
             img_path)
         img_name = os.path.split(img_path)[1]
         names.append(img_name)
@@ -85,11 +86,11 @@ def match(database, test_imgpath):
 
     # init model
     # model = SIAMESENet()
-    model = SCDANet()
+    model = VGGNet()
     # model = BCNNNet()
 
     # extract query image's feature, compute simlarity score and sort
-    test_feature = model.extract_feat(test_imgpath)
+    test_feature = model.resnet_extract_feat(test_imgpath)
     scores = np.dot(test_feature, feats.T)
     rank_ID = np.argsort(scores)[::-1]
     rank_score = scores[rank_ID]
